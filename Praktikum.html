@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Praktikumsaufgabe mit WebGL</title>
+<link href="Praktikum.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<script type="text/javascript" src="three.js"></script>
+<script type="text/javascript" src="OrbitControls.js"></script>
+<script type="text/javascript" src="dat.gui.min.js"></script> 
+<script type="text/javascript" src="Stats.js"></script>
+<script>
+
+	/****************************************************************
+	* 					Geometrical Constants						*
+	* ***************************************************************/
+	var HEAD_RADIUS = 20;
+	var HAT_HEIGHT = HEAD_RADIUS * 1.5;
+	var HAT_BOTTOM_RADIUS = HEAD_RADIUS * 2.5;
+	var BODY_RADIUS = HEAD_RADIUS + HEAD_RADIUS / 4;
+	var BUTTON_RADIUS = HEAD_RADIUS / 4;
+	var EYE_RADIUS = BUTTON_RADIUS / 2;
+	var MOUTH_RADIUS = HEAD_RADIUS / 10;
+	var CYLINDER_RADIUS = HEAD_RADIUS-5;
+	var NOSE_RADIUS = (BUTTON_RADIUS*0.7);
+
+	var container;
+	var stats;
+	var controls;
+	var gui;
+	
+	
+	var scene = new THREE.Scene();
+	var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+	
+	var renderer = new THREE.WebGLRenderer({antialias:true});
+	
+	var material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors} );
+	var wireframematerial = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors, wireframe:true} );
+	
+	var mesh;
+	var wireframeMesh;
+
+	// Color Geometry
+	var whiteGeometry = new THREE.CircleGeometry(0, 0 , 0 , 0);
+	var blackGeometry = new THREE.CircleGeometry(0, 0 , 0 , 0);
+	var orangeGeometry = new THREE.CircleGeometry(0, 0 , 0 , 0);
+
+	var colorWhite = new THREE.Face3(0, 1, 1);
+	var colorBlack = new THREE.Face3(0, 0, 0);
+	var colorOrange = new THREE.Face3(1, 0, 0);
+	
+	
+	function initGeometry()
+	{
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.setClearColor(0xAAAAAA, 1);
+		renderer.setFaceCulling(THREE.CullFaceBack);
+
+		createSnowman();
+
+		camera.position.set(10, 10, 100);
+	}
+
+	/****************************************************************
+	 * 						Build Snowman 							*
+	 * **************************************************************/
+	function createSnowman() {
+		createBody();
+		createHead();
+		createMeshes();
+	}
+
+	/****************************************************************
+	 * 						Build Meshes 							*
+	 * **************************************************************/
+	function createMeshes() {
+
+//		var whiteWireframeMesh = new THREE.Mesh(whiteGeometry, wireframematerial);
+//		var blackWireframeMesh = new THREE.Mesh(blackGeometry, wireframematerial);
+//		var orangeWireframeMesh = new THREE.Mesh(orangeGeometry, wireframematerial);
+
+		var whiteMesh = new THREE.Mesh(whiteGeometry, new THREE.MeshBasicMaterial( { color: 0xFFFFFF } ));
+		var blackMesh = new THREE.Mesh(blackGeometry, new THREE.MeshBasicMaterial( { color: 0x000000 } ));
+		var orangeMesh = new THREE.Mesh(orangeGeometry, new THREE.MeshBasicMaterial( { color: 0xff0000 } ));
+
+		scene.add(whiteMesh);
+		scene.add(blackMesh);
+		scene.add(orangeMesh);
+//		scene.add(whiteWireframeMesh);
+//		scene.add(blackWireframeMesh);
+//		scene.add(orangeWireframeMesh);
+
+	}
+
+	/****************************************************************
+	 * 						Build Snowman 							*
+	 * **************************************************************/
+	function createBody() {
+		var snowBodyGeometry = new THREE.SphereGeometry(BODY_RADIUS, 32, 32);
+		THREE.GeometryUtils.merge(whiteGeometry, snowBodyGeometry);
+		createButtons();
+	}
+
+	function createButtons() {
+		var button1 = new THREE.SphereGeometry(BUTTON_RADIUS, 32, 32);
+		var button2 = new THREE.SphereGeometry(BUTTON_RADIUS, 32, 32);
+		var button3 = new THREE.SphereGeometry(BUTTON_RADIUS, 32, 32);
+
+		button1.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(0.5,0.5,0.5)));
+		button2.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(0.5,0.5,0.5)));
+		button3.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(0.5,0.5,0.5)));
+
+		button1.applyMatrix(new THREE.Matrix4().makeTranslation(0, -BODY_RADIUS+BUTTON_RADIUS*2, BODY_RADIUS*0.75));
+		button2.applyMatrix(new THREE.Matrix4().makeTranslation(0, -BODY_RADIUS+BUTTON_RADIUS*2 - button2.radius*1.5, BODY_RADIUS*0.75 - 1.8*button2.radius));
+		button3.applyMatrix(new THREE.Matrix4().makeTranslation(0, -BODY_RADIUS+BUTTON_RADIUS*2 - button3.radius*1.8, BODY_RADIUS*0.75 - 4*button3.radius));
+
+		THREE.GeometryUtils.merge(blackGeometry, button1);
+		THREE.GeometryUtils.merge(blackGeometry, button2);
+		THREE.GeometryUtils.merge(blackGeometry, button3);
+	}
+	
+	function createHead() {
+		var snowHeadGeometry = new THREE.SphereGeometry(HEAD_RADIUS, 32, 32);
+		snowHeadGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0.0, 0.0, 40.0));
+		THREE.GeometryUtils.merge(whiteGeometry, snowHeadGeometry);
+
+		createEyes();
+		createNose();
+		createMouth();
+		createHat();
+	}
+	
+	function createEyes() {
+		var leftEyeGeometry = new THREE.SphereGeometry(EYE_RADIUS, 32, 32);
+		var rightEyeGeometry = new THREE.SphereGeometry(EYE_RADIUS, 32, 32);
+
+		leftEyeGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(HEAD_RADIUS/2 -2.5, -HEAD_RADIUS+EYE_RADIUS, BODY_RADIUS + HEAD_RADIUS));
+		rightEyeGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(-HEAD_RADIUS/2 + 2.5, -HEAD_RADIUS+EYE_RADIUS, BODY_RADIUS + HEAD_RADIUS));
+		THREE.GeometryUtils.merge(blackGeometry, leftEyeGeometry);
+		THREE.GeometryUtils.merge(blackGeometry, rightEyeGeometry);
+	}
+
+	function createNose() {
+		var noseGeometry = new THREE.CylinderGeometry(NOSE_RADIUS, 0, 10, 32, 32, false);
+
+		noseGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, -HEAD_RADIUS- NOSE_RADIUS*1.35, BODY_RADIUS + HEAD_RADIUS*0.75));
+
+		THREE.GeometryUtils.merge(orangeGeometry, noseGeometry);
+	}
+	
+	function createMouth() {
+		var stone1 = new THREE.SphereGeometry(MOUTH_RADIUS, 32, 32);
+//		var stone2 = new THREE.SphereGeometry(MOUTH_RADIUS, 32, 32);
+//		var stone3 = new THREE.SphereGeometry(MOUTH_RADIUS, 32, 32);
+//		var stone4 = new THREE.SphereGeometry(MOUTH_RADIUS, 32, 32);
+//		var stone5 = new THREE.SphereGeometry(MOUTH_RADIUS, 32, 32);
+
+		stone1.applyMatrix(new THREE.Matrix4().makeTranslation(0, -HEAD_RADIUS+MOUTH_RADIUS*1.5, BODY_RADIUS + HEAD_RADIUS*0.3));
+//		stone2.applyMatrix(new THREE.Matrix4().makeTranslation(-MOUTH_RADIUS*2, -HEAD_RADIUS+MOUTH_RADIUS*1.5, BODY_RADIUS + HEAD_RADIUS*0.5));
+
+		THREE.GeometryUtils.merge(blackGeometry, stone1);
+//		THREE.GeometryUtils.merge(blackGeometry, stone2);
+//		THREE.GeometryUtils.merge(blackGeometry, stone3);
+//		THREE.GeometryUtils.merge(blackGeometry, stone4);
+//		THREE.GeometryUtils.merge(blackGeometry, stone5);
+	}
+	
+	function createHat() {
+		var cylinderGeometry = new THREE.CylinderGeometry(CYLINDER_RADIUS, CYLINDER_RADIUS, HAT_HEIGHT, 50, 50, false);
+		var lowerDisc = new THREE.CircleGeometry(CYLINDER_RADIUS*2, 150, HAT_BOTTOM_RADIUS, HAT_BOTTOM_RADIUS);
+		var upperDisc = new THREE.CircleGeometry(CYLINDER_RADIUS*2, 150, HAT_BOTTOM_RADIUS, HAT_BOTTOM_RADIUS);
+
+		cylinderGeometry.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI/2));
+		cylinderGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, BODY_RADIUS + 2*HEAD_RADIUS + 5));
+		upperDisc.applyMatrix(new THREE.Matrix4().makeTranslation(0.0, 0.0, 55));
+		lowerDisc.applyMatrix(new THREE.Matrix4().makeRotationX(Math.PI));
+		lowerDisc.applyMatrix(new THREE.Matrix4().makeTranslation(0.0, 0.0, 55));
+
+		// Merge geometry
+		THREE.GeometryUtils.merge(blackGeometry, cylinderGeometry);
+		THREE.GeometryUtils.merge(blackGeometry, lowerDisc);
+		THREE.GeometryUtils.merge(blackGeometry, upperDisc);
+	}
+	
+	var frameRate = false;
+	
+	var	wireframed = true;
+	
+	var cullModes = { GL_FRONT:0, GL_BACK:1, GL_FRONT_AND_BACK:2 };
+	var selectedCullMode = 1;
+	
+	
+	function initialize()
+	{
+		container = document.createElement('div');
+		document.body.appendChild(container);
+		
+		container.appendChild(renderer.domElement);
+		
+		
+		stats = new Stats();
+		stats.domElement.style.position = 'absolute';
+		stats.domElement.style.bottom = '0px';
+		stats.domElement.style.visibility = "hidden";
+		document.body.appendChild(stats.domElement);
+		
+		initGeometry();
+		
+		setupControls();
+	}
+	
+	
+	var help = function() 
+	{
+		window.open('Help.html', "_blank");
+	};
+	
+	
+	var reset = function()
+	{
+		window.location.reload();
+	};
+	
+	
+	function updateGui() 
+	{
+		if (gui != null) 
+		{
+			gui.destroy();
+		}
+		
+		gui = new dat.GUI({width: 520});
+		
+		var cullmodeChooser = gui.add(this, 'selectedCullMode', cullModes).name("Culling Modus");
+		var wireframedCheckBox = gui.add(this, 'wireframed').name("Current Backside wireframed");
+		
+		var frameRateCheckBox = gui.add(this, 'frameRate').name("Frames per Second");
+		var helpButton = gui.add(this, 'help').name("Hilfe");
+		var resetButton = gui.add(this, 'reset').name("Reset");
+		
+		wireframedCheckBox.onFinishChange(function (value)
+		{
+			if(value)
+				scene.add(wireframeMesh);
+			else
+				scene.remove(wireframeMesh);
+		});
+		
+		cullmodeChooser.onFinishChange(function (value) 
+		{
+		  switch(value)
+		  {
+			  case "0":
+			  {
+				  renderer.setFaceCulling(THREE.CullFaceFront);
+				  break;
+			  }
+			  case "1":
+			  {
+				  renderer.setFaceCulling(THREE.CullFaceBack);
+				  break;
+			  }
+			  case "2":
+			  {
+				  renderer.setFaceCulling(THREE.CullFaceFrontBack);
+				  break;
+			  }
+			  case "3":
+			  {
+				  renderer.setFaceCulling(THREE.CullFaceNone);
+				  break;
+			  }
+			  default:
+			  {
+				  alert("Fehler - cullmodeChooser.onFinishChange(...): invalid value (" + value + ")");
+				  break;
+			  }
+		  }
+		});
+		
+		
+		frameRateCheckBox.onChange(function (value) 
+		{
+		  if (frameRate) 
+		  {
+			  stats.domElement.style.visibility = "visible";
+		  }
+		  else 
+		  {
+			  stats.domElement.style.visibility = "hidden";
+		  }
+		});
+	}
+  
+  
+	
+	function render()
+	{
+		requestAnimationFrame(render);
+		
+		stats.update();
+
+		renderer.render(scene, camera);
+	}
+	
+	
+	
+	function setupControls()
+	{		
+		controls = new THREE.OrbitControls(camera, renderer.domElement);
+	}
+	
+	
+	
+	initialize();
+	render();
+	
+	
+	window.onload = function()
+	{
+		updateGui();
+	};
+	
+	
+	function resizeWindow() 
+	{
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+		
+		renderer.setSize(window.innerWidth, window.innerHeight);
+	}
+	
+	
+	window.addEventListener('resize', resizeWindow, false);
+</script>
+</body>
+</html>

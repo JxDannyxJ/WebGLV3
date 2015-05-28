@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Hilfeseite zum Praktikum</title>
+<link href="Praktikum.css" rel="stylesheet" type="text/css">
+</head>
+<div id="center">
+	<header><h1>Hilfe zur Praktikumsaufgabe mit WebGL</h1></header>
+    <article>
+    	<h2>Bedienung</h2>
+        Die Szene kann interaktiv über die folgende Auflistung bedient werden:
+        <ul>
+        	<li>Mit der rechten Maustaste wird die Szene rotiert.</li>
+            <li>Mit der mittleren Maustaste wird in die Szene hineingezoomt.</li>
+            <li>Mit der rechten Maustase wird die Szene verschoben.</li>
+        </ul>
+    </article>
+    <article>
+    	<h2>Culling & Face Orientierung</h2>
+        Mithilfe des Culling-Selektors kann festgelegt werden, welche Flächen verworfen werden sollen. Folgende Auswahlmöglichkeiten existieren:
+        <ul>
+        	<li><i class = "glfunction">Gl_Front</i> verwirft die Frontseite (die für den Betrachter sichtbare Seite) der Geometrie.</li>
+            <li><i class = "glfunction">Gl_Back</i> verwirft die Rückseite (die für den Betrachter unsichtbare Seite) der Geometrie.</li>
+            <li><i class = "glfunction">Gl_Front_And_Back</i> verwirft beide Seiten der Geometrie</li>
+        </ul>
+        Der Modus <i class = "glfunction">Gl_None</i> lässt sich mit Three.js nicht abbilden.
+        
+        Die OpenGL Funktion <i>glFrontFace(...)</i> mit den Parametern <i class = "glfunction">Gl_Ccw</i>, bzw. <i class = "glfunction">Gl_Cw</i> lässt sich ebenfalls mit Three.js nicht sinnvoll abbilden.
+        
+        <p>Über den Button <i>Current Backside wireframed</i> kann die Rückseite einer Fläche als Wireframe-Modell angezeigt werden.</p>
+    </article>
+    <article>
+    	<h2>Performance</h2>
+        Mit der Checkbox neben dem Feld <i class = "guielement">Frames per Second</i> kann in der unteren rechten Ecke die aktuelle Bildwiederholfrequenz angezeigt werden.
+    </article>
+    <article>
+    	<h2>Reset</h2>
+        Mit dem Button <i class = "guielement">Reset</i> wird die Szene mit allen Transformationen zurück gesetzt.
+    </article>
+    <article>
+    	<h2>Links</h2>
+        Hier finden sich einige sinnvolle Links zur Hilfestellung:
+        <ul>
+        	<li><a href="http://threejs.org">Three.js</a></li>
+            <li><a href="http://opengl.org">OpenGL</a></li>
+        </ul>
+    </article>
+</div>
+<body>
+</body>
+</html>
